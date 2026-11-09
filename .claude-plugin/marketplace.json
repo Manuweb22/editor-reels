@@ -1,5 +1,6 @@
 {
   "name": "editor-reels",
   "owner": { "name": "Manu Ramos" },
+  "metadata": { "description": "Editor de reels de Manu Ramos para sus clientes." },
   "plugins": [{ "name": "editor-reels", "source": "./" }]
 }

@@ -1,5 +1,6 @@
 {
   "name": "editor-reels",
   "version": "0.1.0",
-  "description": "Editor de reels: pegas el enlace de un reel de ejemplo, subes tu vídeo y Claude lo edita con ese estilo, con un panel visual al lado del chat."
+  "description": "Editor de reels: pegas el enlace de un reel de ejemplo, subes tu vídeo y Claude lo edita con ese estilo, con un panel visual al lado del chat.",
+  "author": { "name": "Manu Ramos" }
 }
