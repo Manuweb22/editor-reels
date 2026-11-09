@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor de reels</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Fraunces:ital,wght@1,500&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--cr:#F4EDE3;--tn:#0F0A07;--nj:#FF5A2C;--gr:#8a7f73}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cr);color:var(--tn);font:13px 'Space Mono',ui-monospace,monospace}
+main{max-width:980px;margin:0 auto;padding:16px}
+.mono{font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+h1{font:22px 'Archivo Black',sans-serif;margin:0}
+h1 span{color:var(--nj)}
+.frase{background:var(--tn);color:var(--cr);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+.frase p{font:italic 500 24px/1.3 'Fraunces',Georgia,serif;margin:6px 0 0;transition:opacity .3s}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pill{border-radius:99px;padding:4px 11px;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.caja{border:1.5px solid var(--tn);border-radius:16px;padding:14px;background:#fffa;margin-bottom:16px}
+.paso{font:15px 'Archivo Black',sans-serif;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--nj);color:#fff;align-items:center;justify-content:center;font:12px 'Archivo Black'}
+input[type=text]{width:100%;background:#fff;border:1.5px solid var(--tn);border-radius:10px;padding:10px 12px;font:13px 'Space Mono',monospace;color:var(--tn)}
+input[type=text]:focus{outline:2px solid var(--nj);outline-offset:1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+.drop{border:1.5px dashed var(--tn);border-radius:14px;padding:12px;cursor:pointer;min-height:96px;transition:background .2s}
+.drop:hover,.drop.sobre{background:#fff}
+.drop.ok{border-style:solid;border-color:var(--nj);background:#fff}
+.drop small{display:block;color:var(--gr);margin-top:3px}
+.lista{font-size:11px;margin-top:6px;word-break:break-all}
+.bt{background:var(--nj);color:#fff;border:none;border-radius:11px;padding:11px 18px;font:14px 'Archivo Black',sans-serif;cursor:pointer;white-space:nowrap}
+.bt:active{transform:scale(.97)}
+.bt2{background:transparent;color:var(--tn);border:1.5px solid var(--tn);border-radius:11px;padding:8px 12px;font:12px 'Space Mono',monospace;cursor:pointer}
+.bt2.sel{background:var(--tn);color:var(--cr)}
+.err{color:#C2410C;min-height:18px;margin-top:6px}
+.aviso{display:none;background:var(--tn);color:var(--cr);border-radius:12px;padding:12px 14px;margin-top:10px}
+.aviso b{color:var(--nj)}
+.vista{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr);gap:14px;align-items:start}
+@media(max-width:760px){.vista{grid-template-columns:1fr 1fr}.vista>div:last-child{grid-column:1/-1}}
+.tel{background:#1d1814;border-radius:20px;aspect-ratio:9/16;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff8;text-align:center;padding:0}
+.tel video{width:100%;height:100%;object-fit:contain;background:#000}
+.chip{border:1.5px solid var(--tn);border-radius:99px;padding:5px 11px;background:transparent;color:var(--tn);font:11px 'Space Mono',monospace;cursor:pointer;margin:0 6px 6px 0}
+.chip:hover{background:var(--tn);color:var(--cr)}
+.stp{display:flex;align-items:center;gap:8px;padding:5px 0;opacity:.3;transition:opacity .3s}
+.stp.ok{opacity:1}.stp.ahora{opacity:1;color:var(--nj)}
+.stp .ic{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.stp.ok .ic{background:var(--nj);border-color:var(--nj);color:#fff}
+.stp.ahora .ic{animation:gira 1s linear infinite;border-top-color:transparent}
+@keyframes gira{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<main>
+<section class="frase">
+<div class="fila"><span class="mono" style="color:var(--nj)" id="fecha">Frase del día</span>
+<button class="bt2" style="color:var(--cr);border-color:var(--cr);padding:4px 10px" onclick="otra()">↻ Otra</button></div>
+<p id="frase"></p>
+</section>
+
+<div class="fila" style="margin-bottom:12px">
+<h1>EDITOR<span>.</span> DE REELS</h1>
+<span class="pill" id="estado" style="background:var(--tn);color:var(--cr)">Listo para editar</span>
+</div>
+
+<section class="caja">
+<div class="paso"><span class="n">1</span>Reel que quieres copiar</div>
+<input type="text" id="enlace" placeholder="https://www.instagram.com/reel/…">
+<div class="lista" id="enlaceok"></div>
+<div class="grid">
+<label class="drop" data-carpeta="entrada"><div class="paso" style="margin:0"><span class="n">2</span>Tu vídeo</div><small>El bruto que has grabado. Arrástralo aquí.</small><div class="lista"></div><input type="file" accept="video/*" multiple hidden></label>
+<label class="drop" data-carpeta="recursos"><div class="paso" style="margin:0"><span class="n">3</span>Tus recursos</div><small>Logo, música, fuentes · opcional. Se guardan para siempre.</small><div class="lista"></div><input type="file" multiple hidden></label>
+<label class="drop" data-carpeta="overlays"><div class="paso" style="margin:0"><span class="n">4</span>Overlays y b-roll</div><small>Clips o imágenes para poner encima · opcional</small><div class="lista"></div><input type="file" multiple hidden></label>
+</div>
+<div class="fila" style="margin-top:12px;align-items:stretch">
+<input type="text" id="nota" placeholder="Algo más: corto a 45 s, CTA «Comenta SESIÓN»">
+<button class="bt" onclick="crear()">Crear reel</button>
+</div>
+<div class="err" id="err"></div>
+<div class="aviso" id="aviso"></div>
+</section>
+
+<section class="vista">
+<div><div class="mono" style="margin-bottom:6px">Ejemplo</div><div class="tel" id="telref">Aquí verás el reel que copias</div></div>
+<div><div class="mono" style="margin-bottom:6px">El tuyo</div><div class="tel" id="teltuyo">Aquí saldrá tu reel editado</div></div>
+<div>
+<div class="mono" style="margin-bottom:6px" id="nomestilo">Estilo copiado · toca para cambiar</div>
+<div id="chips" style="margin-bottom:8px"><span style="color:var(--gr)">Aparecerá al analizar el ejemplo</span></div>
+<div id="pasos"></div>
+<div class="mono" style="margin:10px 0 6px">Versiones</div>
+<div id="vers" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+</div>
+</section>
+
+<section class="caja" style="margin-top:16px">
+<div class="fila" style="align-items:stretch">
+<input type="text" id="cambio" placeholder="Pídele cambios: quita el final y sube la música">
+<button class="bt" onclick="pedirCambio()">Editar</button>
+</div>
+<div class="err" id="err2"></div>
+<div class="aviso" id="aviso2"></div>
+<div class="fila" style="margin-top:8px">
+<button class="bt2" style="flex:1" onclick="fetch('/api/abrir',{method:'POST',body:'{}'})">📂 Abrir carpeta de reels</button>
+<span class="mono" id="misestilos" style="flex:1;text-align:right;color:var(--gr)"></span>
+</div>
+</section>
+</main>
+
+<script>
+const F=["El que fracasa no es el que cae, es el que deja de intentarlo.","Pequeños detalles cambian grandes resultados.","No tienes que ser grande para empezar, pero tienes que empezar para ser grande.","La disciplina te lleva donde la motivación no llega.","Cada vídeo que subes es una versión mejor de ti.","Lo que hoy te cuesta, mañana te sale solo.","No compares tu capítulo 1 con el capítulo 20 de otro.","La constancia gana a la perfección.","Hecho es mejor que perfecto.","El miedo se va haciendo, no pensando.","Tu yo del futuro te está mirando: hazlo por él.","Lo difícil no es empezar, es no rendirse a mitad.","Nadie ve el esfuerzo, pero todos ven los resultados."];
+const $=id=>document.getElementById(id);
+const hoy=new Date(),dia=Math.floor((hoy-new Date(hoy.getFullYear(),0,0))/864e5);let fi=dia%F.length;
+$('fecha').textContent='Frase del día · '+hoy.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+$('frase').textContent=F[fi];
+function otra(){const f=$('frase');f.style.opacity=0;setTimeout(()=>{fi=(fi+1)%F.length;f.textContent=F[fi];f.style.opacity=1},300)}
+
+const PASOS=[["referencia","Ejemplo analizado"],["transcribir","Vídeo transcrito"],["cortes","Cortes y muletillas"],["montaje","Montaje"],["textos","Subtítulos y overlays"],["render","Render 1080×1920"],["listo","Listo"]];
+let subido={entrada:[],recursos:[],overlays:[]},verActual=null,ultimo={};
+
+$('enlace').addEventListener('input',e=>{const v=e.target.value.trim();$('err').textContent='';
+$('enlaceok').innerHTML=/instagram\.com\/(reel|reels|p)\/|tiktok\.com|youtu/.test(v)?'<span style="color:var(--nj)">✓ Reel detectado: se bajará y se copiará su estilo</span>':(v?'Pega un enlace de Instagram, TikTok o YouTube':'')});
+
+document.querySelectorAll('.drop').forEach(d=>{
+ const inp=d.querySelector('input');
+ inp.addEventListener('change',()=>subir(d,[...inp.files]));
+ d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('sobre')});
+ d.addEventListener('dragleave',()=>d.classList.remove('sobre'));
+ d.addEventListener('drop',e=>{e.preventDefault();d.classList.remove('sobre');subir(d,[...e.dataTransfer.files])});
+});
+async function subir(d,files){
+ const c=d.dataset.carpeta,l=d.querySelector('.lista');$('err').textContent='';
+ for(const f of files){
+  l.textContent='Subiendo '+f.name+'…';
+  const r=await fetch(`/api/subir?carpeta=${c}&nombre=${encodeURIComponent(f.name)}`,{method:'PUT',body:f});
+  if(!r.ok){l.textContent='No se pudo subir '+f.name;return}
+  const j=await r.json();subido[c].push(j.ruta);
+ }
+ d.classList.add('ok');l.textContent='✓ '+subido[c].map(x=>x.split('/').pop()).join(', ');
+}
+
+function avisar(id,txt){const a=$(id);a.style.display='block';a.innerHTML=txt+' <button class="bt2" style="color:var(--cr);border-color:var(--cr);padding:3px 9px;margin-left:6px" onclick="navigator.clipboard.writeText(\'hazlo\')">Copiar «hazlo»</button>'}
+async function pedir(datos){await fetch('/api/peticion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(datos)})}
+
+async function crear(){
+ const enlace=$('enlace').value.trim();
+ if(!enlace&&!subido.entrada.length){$('err').textContent='Pega el enlace del reel que quieres copiar y sube tu vídeo.';return}
+ if(!enlace){$('err').textContent='Pega el enlace del reel que quieres copiar.';return}
+ if(!subido.entrada.length){$('err').textContent='Sube tu vídeo en el paso 2.';return}
+ await pedir({tipo:'crear',enlace,video:subido.entrada[subido.entrada.length-1],nota:$('nota').value.trim()});
+ avisar('aviso','Pedido guardado. Ahora escribe <b>hazlo</b> en el chat de Claude y empieza a editar.');
+}
+async function pedirCambio(){
+ const c=$('cambio').value.trim();
+ if(!c){$('err2').textContent='Escribe qué quieres cambiar.';return}
+ if(!ultimo.versiones||!ultimo.versiones.length){$('err2').textContent='Primero crea un reel arriba.';return}
+ $('err2').textContent='';await pedir({tipo:'cambio',cambio:c});$('cambio').value='';
+ avisar('aviso2','Cambio guardado. Escribe <b>hazlo</b> en el chat de Claude.');
+}
+$('cambio').addEventListener('input',()=>$('err2').textContent='');
+function chip(t){$('cambio').value=($('cambio').value?$('cambio').value+'; ':'')+'Cambia: '+t;$('cambio').focus()}
+
+function video(cont,ruta,muted,marca){
+ const clave=ruta+(marca||'');if(cont.dataset.ruta===clave)return;cont.dataset.ruta=clave;
+ cont.innerHTML=`<video src="/media?ruta=${encodeURIComponent(ruta)}&v=${marca||0}#t=0.1" controls playsinline preload="metadata" ${muted?'muted loop autoplay':''}></video>`;
+}
+function pintar(s){
+ ultimo=s;
+ const p=(s.progreso||{}).paso,k=PASOS.findIndex(x=>x[0]===p);
+ $('pasos').innerHTML=PASOS.slice(0,6).map(([id,txt],i)=>`<div class="stp ${p==='listo'||i<k?'ok':(i===k?'ahora':'')}"><span class="ic">${p==='listo'||i<k?'✓':''}</span>${txt}</div>`).join('');
+ const est=$('estado');
+ if(p&&p!=='listo'){est.textContent=(s.progreso.detalle||'Editando')+'…';est.style.background='var(--nj)';est.style.color='#fff'}
+ else if(s.versiones.length){est.textContent='Versión '+s.versiones.length+' lista';est.style.background='var(--nj)';est.style.color='#fff'}
+ else if(s.peticion&&s.peticion.estado==='pendiente'){est.textContent='Pedido esperando a Claude';est.style.background='var(--tn)';est.style.color='var(--cr)'}
+ if(s.referencia&&s.referencia.video)video($('telref'),s.referencia.video,true);
+ if(s.versiones.length){
+  if(!verActual||!s.versiones.includes(verActual)||s.versiones.length>(pintar.n||0))verActual=s.versiones[s.versiones.length-1];
+  pintar.n=s.versiones.length;
+  video($('teltuyo'),verActual,false,(s.marcas||{})[verActual]);
+  $('vers').innerHTML=s.versiones.map((v,i)=>`<button class="bt2 ${v===verActual?'sel':''}" style="padding:4px 10px" onclick="verActual='${v}';pintar(ultimo)">v${i+1}</button>`).join('');
+ }
+ if(s.estilo&&s.estilo.etiquetas&&s.estilo.etiquetas.length){
+  $('nomestilo').textContent=(s.estilo.nombre||'Estilo copiado')+' · toca para cambiar';
+  $('chips').innerHTML=s.estilo.etiquetas.map(t=>`<button class="chip" onclick="chip('${t.replace(/'/g,'')}')">${t}</button>`).join('');
+ }
+ $('misestilos').textContent=s.estilos.length?'Tus estilos guardados: '+s.estilos.length:'';
+ if(s.peticion&&s.peticion.estado!=='pendiente'){$('aviso').style.display='none';$('aviso2').style.display='none'}
+}
+async function refrescar(){try{pintar(await (await fetch('/api/estado')).json())}catch(e){}}
+refrescar();setInterval(refrescar,1500);
+</script>
+</body>
+</html>

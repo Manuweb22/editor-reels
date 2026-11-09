@@ -1,0 +1,5 @@
+{
+  "name": "editor-reels",
+  "owner": { "name": "Manu Ramos" },
+  "plugins": [{ "name": "editor-reels", "source": "./" }]
+}
